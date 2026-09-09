@@ -20,6 +20,7 @@ return function(capabilities)
 	local fixjson = require("efmls-configs.formatters.fixjson") -- json formatter
 	local shellcheck = require("efmls-configs.linters.shellcheck") -- bash linter
 	local shfmt = require("efmls-configs.formatters.shfmt") -- bash formatter
+	local markdown = require("efmls-configs.formatters.mdformat")
 	local hadolint = require("efmls-configs.linters.hadolint") -- docker linter
 
 	vim.lsp.config("efm", {
@@ -61,7 +62,7 @@ return function(capabilities)
 				json = { eslint_d, fixjson },
 				jsonc = { eslint_d, fixjson },
 				lua = { luacheck, stylua },
-				markdown = { prettier_d },
+				markdown = { markdown },
 				python = { flake8, black },
 				sh = { shellcheck, shfmt },
 				svelte = { eslint_d, prettier_d },
