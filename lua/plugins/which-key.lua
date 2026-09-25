@@ -9,4 +9,8 @@ vim.keymap.set(
   { desc = "Buffer Local Keymaps (which-key)" }
 )
 
-require('which-key').setup()
+require('which-key').setup({
+  filter = function(mapping)
+    return not require('config.langmap').is_cyrillic(mapping.lhs)
+  end,
+})

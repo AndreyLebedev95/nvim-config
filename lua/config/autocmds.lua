@@ -25,16 +25,38 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 	callback = function()
 		vim.hl.on_yank({
 			higroup = "IncSearch",
-			timeout = 200,
+			timeout = 400,
 		})
 	end,
 })
+
+-- repos whose own style conflicts with the configured formatters
+local format_on_save_exclude = {
+	vim.fs.normalize("~/Desktop/work/backend"),
+}
+
+local function is_format_excluded(bufnr)
+	local path = vim.api.nvim_buf_get_name(bufnr)
+	if path == "" then
+		return false
+	end
+	path = vim.fs.normalize(path)
+	for _, root in ipairs(format_on_save_exclude) do
+		if path == root or vim.startswith(path, root .. "/") then
+			return true
+		end
+	end
+	return false
+end
 
 -- format on save using efm langserver and configured formatters
 local lsp_fmt_group = vim.api.nvim_create_augroup("FormatOnSaveGroup", {})
 vim.api.nvim_create_autocmd("BufWritePre", {
 	group = lsp_fmt_group,
-	callback = function()
+	callback = function(args)
+		if is_format_excluded(args.buf) then
+			return
+		end
 		require("mini.trailspace").trim()
 		local efm = vim.lsp.get_clients({ name = "efm" })
 		if vim.tbl_isempty(efm) then
@@ -63,6 +85,5 @@ vim.api.nvim_create_autocmd("FileType", {
 		vim.opt_local.number = false
 		vim.opt_local.cursorline = false
 		vim.opt_local.colorcolumn = ""
-		vim.opt_local.signcolumn = "no"
 	end,
 })
