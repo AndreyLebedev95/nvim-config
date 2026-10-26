@@ -87,3 +87,35 @@ vim.api.nvim_create_autocmd("FileType", {
 		vim.opt_local.colorcolumn = ""
 	end,
 })
+
+-- follow [text](path.md#anchor) under cursor: opens path relative to the file, jumps to <a id="anchor">
+local function follow_md_link()
+	local line, col = vim.api.nvim_get_current_line(), vim.fn.col(".")
+	local target
+	for s, t, e in line:gmatch("()%[.-%]%((.-)%)()") do
+		if col >= s and col < e then
+			target = t
+			break
+		end
+	end
+	if not target then
+		return vim.cmd("normal! gf")
+	end
+	local path, anchor = target:match("^([^#]*)#?(.*)$")
+	vim.cmd("normal! m'")
+	if path ~= "" then
+		vim.cmd.edit(vim.fn.fnameescape(vim.fs.joinpath(vim.fn.expand("%:p:h"), path)))
+	end
+	if anchor ~= "" and vim.fn.search('\\V<a id="' .. anchor .. '"', "cw") == 0 then
+		vim.notify("anchor not found: " .. anchor, vim.log.levels.WARN)
+	end
+end
+
+local markdown_links = vim.api.nvim_create_augroup("MarkdownLinks", {})
+vim.api.nvim_create_autocmd("FileType", {
+	group = markdown_links,
+	pattern = "markdown",
+	callback = function(ev)
+		vim.keymap.set("n", "gf", follow_md_link, { buffer = ev.buf, desc = "Follow markdown link" })
+	end,
+})
