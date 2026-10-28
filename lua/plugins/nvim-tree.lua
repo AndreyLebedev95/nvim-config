@@ -8,6 +8,7 @@ vim.pack.add({
 })
 
 local config = {
+  sync_root_with_cwd = true,
   sort = {
     sorter = "case_sensitive",
   },
